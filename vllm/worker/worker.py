@@ -66,12 +66,16 @@ class Worker(LocalOrDistributedWorkerBase):
         # mlp_speculator
         speculative_config = self.speculative_config
         model_config = self.model_config
-        speculative_args = {} if speculative_config is None \
-            or (speculative_config.draft_model_config.model ==
-                model_config.model) \
-            or (speculative_config.draft_model_config.hf_config.model_type
-                not in ["medusa", "mlp_speculator", "eagle"]) \
-                    else {"return_hidden_states": True}
+        additional_args = {}
+        
+        if (
+            speculative_config is not None
+            and speculative_config.draft_model_config.model != \
+                    model_config.model
+            and speculative_config.draft_model_config.hf_config.model_type in \
+                    ["medusa", "mlp_speculator", "eagle"]
+        ) or model_config.return_hidden_states:
+            additional_args["return_hidden_states"] = True
 
         ModelRunnerClass: Type[GPUModelRunnerBase] = ModelRunner
         if model_runner_cls is not None:
@@ -80,11 +84,12 @@ class Worker(LocalOrDistributedWorkerBase):
             ModelRunnerClass = EmbeddingModelRunner
         elif self.model_config.is_encoder_decoder:
             ModelRunnerClass = EncoderDecoderModelRunner
+        print('additional_args', additional_args)
         self.model_runner: GPUModelRunnerBase = ModelRunnerClass(
             vllm_config=self.vllm_config,
             kv_cache_dtype=self.cache_config.cache_dtype,
             is_driver_worker=is_driver_worker,
-            **speculative_args,
+            **additional_args,
         )
         # Uninitialized cache engine. Will be initialized by
         # initialize_cache.

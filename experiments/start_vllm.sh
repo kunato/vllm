@@ -1,0 +1,1 @@
+LD_LIBRARY_PATH=/usr/local/cuda-12.5/lib64 CUDA_VISIBLE_DEVICES=1 vllm serve /workspace/exp-kunato/vllm/pretrained/DiVA-llama-3.2-1b --served-model-name llm --max-model-len 4096 --gpu-memory-utilization 0.3 --disable-log-requests --trust-remote-code

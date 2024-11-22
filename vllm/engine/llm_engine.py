@@ -276,6 +276,7 @@ class LLMEngine:
             model_config.trust_remote_code,
             model_config.dtype,
             model_config.max_model_len,
+            model_config.return_hidden_states,
             load_config.download_dir,
             load_config.load_format,
             parallel_config.tensor_parallel_size,
@@ -1100,15 +1101,15 @@ class LLMEngine:
         if has_multiple_outputs:
             assert self.scheduler_config.is_multi_step or \
                      self.speculative_config
-            # Organize outputs by [step][sequence group] instead of
-            # [sequence group][step].
-            outputs_by_sequence_group = create_output_by_sequence_group(
-                outputs, num_seq_groups=len(seq_group_metadata_list))
             # We have outputs for multiple steps submitted in a single burst,
             # so invalidate is_first_step_output.
             is_first_step_output = None
-        else:
-            outputs_by_sequence_group = outputs
+            
+        outputs_by_sequence_group = create_output_by_sequence_group(
+            outputs,
+            scheduled_seq_groups=scheduler_outputs.scheduled_seq_groups,
+            return_hidden_states=self.model_config.return_hidden_states,
+        )
 
         # Determine the requests we need to operate on
         if request_id:
@@ -1143,10 +1144,7 @@ class LLMEngine:
                 continue
 
             output: List[SequenceGroupOutput]
-            if has_multiple_outputs:
-                output = outputs_by_sequence_group[i]
-            else:
-                output = [outputs_by_sequence_group[0][i]]
+            output = outputs_by_sequence_group[i]
 
             if not is_async:
                 if self.scheduler_config.is_multi_step:
@@ -1177,6 +1175,8 @@ class LLMEngine:
             if self.model_config.task == "embedding":
                 self._process_sequence_group_outputs(seq_group, output)
             else:
+                if self.model_config.return_hidden_states:
+                    self.output_processor.process_hidden_states(seq_group, output)
                 self.output_processor.process_prompt_logprob(seq_group, output)
                 if seq_group_meta.do_sample:
                     self.output_processor.process_outputs(

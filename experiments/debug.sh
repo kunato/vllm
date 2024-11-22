@@ -1,0 +1,1 @@
+LD_LIBRARY_PATH=/usr/local/cuda-12.5/lib64 python experiments/debug_vllm.py

@@ -90,6 +90,8 @@ class ModelConfig:
             the default version.
         max_model_len: Maximum length of a sequence (including prompt and
             output). If None, will be derived from the model.
+        return_hidden_states: Whether the model should return hidden states with
+            each token.
         quantization: Quantization method that was used to quantize the model
             weights. If None, we assume the model weights are not quantized.
         quantization_param_path: Path to JSON file containing scaling factors.
@@ -149,6 +151,7 @@ class ModelConfig:
             rope_theta: Optional[float] = None,
             tokenizer_revision: Optional[str] = None,
             max_model_len: Optional[int] = None,
+            return_hidden_states: Optional[bool] = None,
             spec_target_max_model_len: Optional[int] = None,
             quantization: Optional[str] = None,
             quantization_param_path: Optional[str] = None,
@@ -206,6 +209,7 @@ class ModelConfig:
         self.quantization_param_path = quantization_param_path
         self.enforce_eager = enforce_eager
         self.max_seq_len_to_capture = max_seq_len_to_capture
+        self.return_hidden_states = return_hidden_states
         self.max_logprobs = max_logprobs
         self.disable_sliding_window = disable_sliding_window
         self.skip_tokenizer_init = skip_tokenizer_init

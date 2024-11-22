@@ -922,6 +922,7 @@ class EngineArgs:
             hf_overrides=self.hf_overrides,
             tokenizer_revision=self.tokenizer_revision,
             max_model_len=self.max_model_len,
+            return_hidden_states=True,
             quantization=self.quantization,
             quantization_param_path=self.quantization_param_path,
             enforce_eager=self.enforce_eager,
