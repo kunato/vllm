@@ -185,8 +185,11 @@ def input_processor_for_qwen2_audio(
                          target_sr=processor.feature_extractor.sampling_rate)
         for audio, sampling_rate in audios
     ]
+    # Here is the original (but leading to index error)
+    # audio_input_lengths = np.array(
+    #     [min(3000, _.shape[0] // 160 + 1) for _ in resampled_audios])
     audio_input_lengths = np.array(
-        [min(3000, _.shape[0] // 160 + 1) for _ in resampled_audios])
+        [min(3000, _.shape[0] // 160) for _ in resampled_audios])
 
     audio_feat_lengths, audio_output_lengths = _get_feat_extract_output_lengths(
         audio_input_lengths)
